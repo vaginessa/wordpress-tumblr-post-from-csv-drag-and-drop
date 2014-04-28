@@ -87,20 +87,30 @@ class TumblrCSV
    */
   function tumblrCSV($atts = array(), $contents = "")
   {
+    if (isset($_REQUEST["logout"]))
+        unset($_SESSION["access_token"]);
+        
     require("tumblr/index.php");
     
+    
+    
+      
     if ($content->meta->status == 401) {
+      
       $url = get_permalink();
       $url = $url ? $url : $this->current_page_url();
-      
       $url = plugins_url('tumblr/redirect.php', __FILE__) . "?redirect=" . urlencode($url);
       echo '<a href="' . $url . '">Connect with Tumblr</a>';
     } //$content->meta->status == 401
     elseif ($content->meta->status == 200) {
+    
+      
+        
       if (isset($_FILES["fileselect"])) {
         $this->returnMessage = true;
         $message             = $this->upload_callback(false);
       } //isset($_FILES["fileselect"])
+      
       $username = $content->response->user->name;
       $message  = 'Hey, ' . $username . '. Drop CSV file here.';
       
@@ -125,6 +135,7 @@ class TumblrCSV
 
 
         </form>
+        <form method="post"><input type="submit" name="logout" value="Logout"/></form>
        
       ';
       $return .= '<script>var ajaxurl = "' . admin_url('admin-ajax.php') . '";</script>';
@@ -172,7 +183,7 @@ class TumblrCSV
               $post["type"]  = $line[0];
               $post["tags"]  = $line[1];
               $post["date"]  = $line[2];
-              //$post["state"] = "queue";
+              $post["state"] = "queue";
               switch ($line[0]) {
                 case "video":
                   $post["embed"]   = $line[3];

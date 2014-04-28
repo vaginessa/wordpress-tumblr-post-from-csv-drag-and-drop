@@ -41,11 +41,13 @@ var blocked = false;
          var fd = new FormData();
          
          var mes = $id("filedrag");
+         var token = $id("token");
 
          mes.innerHTML = "Loading...";
          blocked = true;
          fd.append("action", "my_action");
          fd.append("fileselect", file);
+         fd.append("token", token.value);
 
 
          var xhr = new XMLHttpRequest();

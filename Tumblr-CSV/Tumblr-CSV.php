@@ -105,6 +105,7 @@ class TumblrCSV
         <script src="' . plugins_url('js/html5shiv.js', __FILE__) . '"></script>
         <![endif]-->
         <form id="upload" action="#" method="POST" enctype="multipart/form-data">
+          '.wp_nonce_field('upload_tumblr_csv','token', null, false).'
           <div>
             <input type="file" id="fileselect" name="fileselect" >
             <div id="filedrag">' . $message . '</div>
@@ -127,83 +128,95 @@ class TumblrCSV
   
   function upload_callback()
   {
-    $message = $success = false;
-    require("tumblr/index.php");
-    
-    if ($content->meta->status != 200) {
-      $message = "Not authenticated with tumblr";
-    } //$content->meta->status != 200
-    else if (isset($_FILES["fileselect"])) {
-      $file = $_FILES["fileselect"];
-      if ($file["size"] <= 1024000) {
-        if ($file["type"] == "text/csv") {
-          $lines = explode("\n", file_get_contents($file["tmp_name"]));
-          
-          foreach ($user_info->response->user->blogs as $blog) {
-            if ($blog->primary === true) {
-              break;
-            } //$blog->primary === true
-          } //$user_info->response->user->blogs as $blog
-          $hostname = parse_url($blog->url, PHP_URL_HOST);
-          
-          foreach ($lines as $line) {
-            $line         = str_getcsv($line);
-            $post         = array();
-            $post["type"] = $line[0];
-            $post["tags"] = $line[1];
-            $post["date"] = $line[2];
-            switch ($line[0]) {
-              case "video":
-                $post["embed"]   = $line[3];
-                $post["caption"] = $line[4];
-                
-                break;
-              case "chat":
-                $post["title"]        = $line[3];
-                $post["conversation"] = $line[4];
-                break;
-              case "audio":
-                $post["data"]         = $line[3];
-                $post["external_url"] = $line[3];
-                $post["caption"]      = $line[4];
-                break;
-              case "photo":
-                $post["source"]  = $line[3];
-                $post["data"]    = (file_get_contents($line[3]));
-                $post["caption"] = $line[4];
-                $post["link"]    = $line[5];
-                break;
-              case "quote":
-                $post["quote"]  = $line[3];
-                $post["source"] = $line[4];
-                break;
-              case "link":
-                $post["title"]       = $line[3];
-                $post["url"]         = $line[4];
-                $post["description"] = $line[5];
-                break;
-              default:
-                $post["title"] = "text";
-                $post["title"] = $line[3];
-                $post["body"]  = $line[4];
-            } //$line[0]
-            
-            $connection->post("blog/$hostname/post", $post);
-            
-          } //$lines as $line
-          
-          $message = count($lines) . " posts sent";
-          
-        } //$file["type"] == "text/csv"
-        else
-          $message = "Invalid file type. Must be CSV";
-      } //$file["size"] <= 1024000
-      else
-        $message = "File too big. Max 1 MB.";
-    } //isset($_FILES["fileselect"])
+
+    $message = false;
+
+    if ( 
+      ! isset( $_POST['token'] ) 
+      || ! wp_verify_nonce( $_POST['token'], 'upload_tumblr_csv' ) 
+    ) 
+    {
+      $message = "Invalid security token";
+    }
     else
-      $message = "No file supplied";
-    
+    {
+      require("tumblr/index.php");
+      
+      if ($content->meta->status != 200) {
+        $message = "Not authenticated with tumblr";
+      } //$content->meta->status != 200
+      else if (isset($_FILES["fileselect"])) {
+        $file = $_FILES["fileselect"];
+        if ($file["size"] <= 1024000) {
+          if ($file["type"] == "text/csv") {
+            $lines = explode("\n", file_get_contents($file["tmp_name"]));
+            
+            foreach ($user_info->response->user->blogs as $blog) {
+              if ($blog->primary === true) {
+                break;
+              } //$blog->primary === true
+            } //$user_info->response->user->blogs as $blog
+            $hostname = parse_url($blog->url, PHP_URL_HOST);
+            
+            foreach ($lines as $line) {
+              $line         = str_getcsv($line);
+              $post         = array();
+              $post["type"] = $line[0];
+              $post["tags"] = $line[1];
+              $post["date"] = $line[2];
+              switch ($line[0]) {
+                case "video":
+                  $post["embed"]   = $line[3];
+                  $post["caption"] = $line[4];
+                  
+                  break;
+                case "chat":
+                  $post["title"]        = $line[3];
+                  $post["conversation"] = $line[4];
+                  break;
+                case "audio":
+                  $post["data"]         = $line[3];
+                  $post["external_url"] = $line[3];
+                  $post["caption"]      = $line[4];
+                  break;
+                case "photo":
+                  $post["source"]  = $line[3];
+                  $post["data"]    = (file_get_contents($line[3]));
+                  $post["caption"] = $line[4];
+                  $post["link"]    = $line[5];
+                  break;
+                case "quote":
+                  $post["quote"]  = $line[3];
+                  $post["source"] = $line[4];
+                  break;
+                case "link":
+                  $post["title"]       = $line[3];
+                  $post["url"]         = $line[4];
+                  $post["description"] = $line[5];
+                  break;
+                default:
+                  $post["title"] = "text";
+                  $post["title"] = $line[3];
+                  $post["body"]  = $line[4];
+              } //$line[0]
+              
+              $connection->post("blog/$hostname/post", $post);
+              
+            } //$lines as $line
+            
+            $message = count($lines) . " posts sent";
+            
+          } //$file["type"] == "text/csv"
+          else
+            $message = "Invalid file type. Must be CSV";
+        } //$file["size"] <= 1024000
+        else
+          $message = "File too big. Max 1 MB.";
+      } //isset($_FILES["fileselect"])
+      else
+        $message = "No file supplied";
+    }
+
     if (isset($this->returnMessage))
       return $message;
     

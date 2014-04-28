@@ -85,7 +85,10 @@ class TumblrCSV
     require("tumblr/index.php");
     
     if ($content->meta->status == 401) {
-      $url = plugins_url('tumblr/redirect.php', __FILE__) . "?redirect=" . urlencode($this->current_page_url());
+      $url = get_permalink();
+      $url = $url ? $url : $this->current_page_url();
+      
+      $url = plugins_url('tumblr/redirect.php', __FILE__) . "?redirect=" . urlencode($url);
       echo '<a href="' . $url . '">Connect with Tumblr</a>';
     } //$content->meta->status == 401
     elseif ($content->meta->status == 200) {

@@ -4,4 +4,4 @@
 "link","tag1,tag2,tag3","27-05-2013","title","url","description"
 "chat","tag1,tag2,tag3","27-05-2013","title","conversation"
 "audio","tag1,tag2,tag3","27-05-2013","http://freedownloads.last.fm/download/569264057/Get%2BGot.mp3","caption"
-"video","tag1,tag2,tag3","27-05-2013",'<iframe width="560" height="315" src="//www.youtube.com/embed/b6dD-I7kJmM" frameborder="0" allowfullscreen></iframe>',"caption"
+"video","tag1,tag2,tag3","27-05-2013",'<iframe width="560" height="315" src="//www.youtube.com/embed/b6dD-I7kJmM" frameborder="0" allowfullscreen></iframe>',"Test caption"

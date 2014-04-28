@@ -31,7 +31,12 @@ class TumblrCSV
       $this,
       'upload_callback'
     ));
+    add_action('wp_ajax_nopriv_my_action', array(
+      $this,
+      'upload_callback'
+    ));
     
+
     add_action('init', array(
       $this,
       'myStartSession'
@@ -162,11 +167,12 @@ class TumblrCSV
             $hostname = parse_url($blog->url, PHP_URL_HOST);
             
             foreach ($lines as $line) {
-              $line         = str_getcsv($line);
-              $post         = array();
-              $post["type"] = $line[0];
-              $post["tags"] = $line[1];
-              $post["date"] = $line[2];
+              $line          = str_getcsv($line);
+              $post          = array();
+              $post["type"]  = $line[0];
+              $post["tags"]  = $line[1];
+              $post["date"]  = $line[2];
+              //$post["state"] = "queue";
               switch ($line[0]) {
                 case "video":
                   $post["embed"]   = $line[3];
